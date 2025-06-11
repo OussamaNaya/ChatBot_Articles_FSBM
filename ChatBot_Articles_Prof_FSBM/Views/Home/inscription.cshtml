@@ -1,0 +1,38 @@
+﻿@{
+    ViewData["Title"] = "Inscription";
+}
+@model Etudiant
+
+
+@if (TempData["succes"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["succes"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["erreur"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["erreur"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="form-container">
+    <h2>Inscription</h2>
+    <form method="post" asp-controller="Home" asp-action="Inscription">
+        <label asp-for="Nom">Nom d'utilisateur :</label>
+        <input type="text" asp-for="Nom" required>
+
+        <label asp-for="Email">Email :</label>
+        <input type="email" asp-for="Email" required>
+
+        <label asp-for="Pass">Mot de passe :</label>
+        <input type="password" asp-for="Pass" required>
+
+        <button type="submit">S'inscrire</button>
+        <p>Déjà un compte ? <a asp-controller="Home" asp-action="Connexion" >Se connecter</a></p>
+    </form>
+</div>

@@ -1,0 +1,41 @@
+﻿@model List<ModelProf>
+@* Ou tu peux créer une classe statique propre *@
+@{
+    ViewData["Title"] = "Statistique";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<canvas id="myChart" width="800" height="400"></canvas>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels = @Html.Raw(Json.Serialize(Model.Select(x => x.NomProf)));
+        const data = @Html.Raw(Json.Serialize(Model.Select(x => x.NombreRecherches)));
+
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Nombre de recherches',
+                    data: data,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        precision: 0
+                    }
+                }
+            }
+        });
+    </script>
+}

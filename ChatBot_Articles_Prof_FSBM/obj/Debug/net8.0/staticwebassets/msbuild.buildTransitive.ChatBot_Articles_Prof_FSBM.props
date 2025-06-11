@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\ChatBot_Articles_Prof_FSBM.props" />
+</Project>

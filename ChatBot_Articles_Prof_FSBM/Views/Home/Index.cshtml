@@ -1,0 +1,331 @@
+﻿@model Etudiant
+@{
+    ViewData["Title"] = "FSBM ChatBot";
+}
+
+@if (TempData["succes"] != null)
+{
+    <div id="alert-success" class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["succes"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["erreur"] != null)
+{
+    <div id="alert-error" class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["erreur"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="loader-container" id="loader" style="display: none;">
+    <img src="https://i.gifer.com/ZZ5H.gif" alt="Loading..." class="loader" />
+</div>
+
+
+<!-- ===== NAVBAR ===== -->
+@* <nav> *@
+@*     <div class="logo">Search-bot</div> *@
+@*     <div class="nav-actions"> *@
+@*         <button class="connexion-btn" onclick="window.location.href='connexion.html'">Connexion</button> *@
+@*         <button class="connexion-btn" onclick="window.location.href='inscription.html'">Inscription</button> *@
+@*         <div class="menu-btn" onclick="showSidebar()">☰</div> *@
+@*     </div> *@
+@* </nav> *@
+
+
+<!-- ===== SIDEBAR DROITE ===== -->
+<div class="sidebar" id="sidebar">
+    <span class="close-btn" onclick="hideSidebar()">✕</span>
+    <ul>
+        <div class="accordion-container">
+
+            <div class="accordion-box" onclick="loadProfs()">
+                <h3>🎓Professeurs</h3>
+                <!-- <ul id="prof-list" style="list-style-type: disc;"></ul> -->
+            </div>
+            <ul id="prof-list" style="list-style-type: disc;"></ul>
+
+
+            <div class="accordion-box" onclick="toggleAccordion(this)">
+                <h3>🔗 Liens utiles</h3>
+                <ul style="list-style-type: disc;">
+                    <li><a href="https://www.fsb.univh2c.ma" target="_blank">Faculté des Sciences Ben M'Sik</a></li>
+                    <li><a href="https://www.univh2c.ma" target="_blank">Université Hassan II</a></li>
+                </ul>
+            </div>
+
+            <div class="accordion-box" onclick="loadHistorique()">
+                <h3>🕘Historique</h3>
+                <!-- <ul id="prof-list" style="list-style-type: disc;"></ul> -->
+            </div>
+            <ul id="historique-liste" style="list-style-type: disc;"></ul>
+        </div>
+    </ul>
+</div>
+<!-- ===== CONTENU PRINCIPAL ===== -->
+<main class="main-card">
+    <div class="content">
+        <h2>Bienvenue <b>@Model.Nom</b> sur FSBM ChatBot</h2>
+        <p>Découvrez les articles, les informations et bien plus.</p>
+    </div>
+    <div class="chat-area">
+        <div class="messages" id="messages">
+            <p><strong>SearchProf:</strong> Bienvenue dans votre ChatBot universitaire 👨‍🏫🎓</p>
+        </div>
+        <!-- Searchbar fixée en bas -->
+        <div class="search-container">
+            <input type="text" placeholder="Rechercher maintenant..." id="messageInput" />
+            <button type="submit" onclick="envoyerMessage()">Rechercher</button>
+        </div>
+</main>
+
+
+
+<!-- JS -->
+<!-- regrouper les listes -->
+<script>
+    var isListProf= false;
+    var isListHistorique = false;
+
+    function showLoader() {
+        document.getElementById("loader").style.display = "flex";
+    }
+
+    function hideLoader() {
+        document.getElementById("loader").style.display = "none";
+    }
+
+    // document.addEventListener("DOMContentLoaded", function () {
+    //     Exemple : utilisateur non connecté
+    //     document.getElementById("link-inscription").classList.remove("visually-hidden");
+    //     document.getElementById("link-connexion").classList.remove("visually-hidden");
+    //     document.getElementById("link-deconnexion").classList.remove("visually-hidden");
+    // });
+
+
+    function loadProfs() {
+       const list = document.getElementById('prof-list');
+
+       if(!isListProf)
+       {
+           fetch('/Home/GetProfesseurs')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Data:', data);
+
+                data.forEach(prof => {
+                    console.log('prof.nom :', prof.nom);
+                });
+
+                //const list = document.getElementById('prof-list');
+                list.innerHTML = '';
+
+                if (!Array.isArray(data)) {
+                    list.innerHTML = '<li>Erreur : données non valides</li>';
+                    return;
+                }
+
+                data.forEach(prof => {
+                    const li = document.createElement('li');
+                    li.textContent = prof.nom ?? '[Nom manquant]';
+                    list.appendChild(li);
+                });
+
+                isListProf = true;
+            })
+            .catch(error => {
+                console.error('Erreur fetch:', error);
+            });
+       } else {
+            // Cacher la liste
+            //const list = document.getElementById('prof-list');
+            list.innerHTML = '';
+            isListProf = false;
+       }
+        
+    }
+
+    function loadHistorique() {
+       const list = document.getElementById('historique-liste');
+
+       if(!isListHistorique)
+       {
+           fetch('/Home/GetHistorique')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Historique:', data);
+
+                data.forEach(hist => {
+                    console.log('hist.question :', hist.question);
+                });
+
+                //const list = document.getElementById('prof-list');
+                list.innerHTML = '';
+
+                if (!Array.isArray(data)) {
+                    list.innerHTML = '<li>Erreur : données non valides</li>';
+                    return;
+                }
+
+                data.forEach(hist => {
+                    const li = document.createElement('li');
+                    li.textContent = hist.question ?? '[Nom manquant]';
+                    list.appendChild(li);
+                });
+
+                isListHistorique = true;
+            })
+            .catch(error => {
+                console.error('Erreur fetch:', error);
+            });
+       } else {
+            // Cacher la liste
+            //const list = document.getElementById('prof-list');
+            list.innerHTML = '';
+            isListHistorique = false;
+       }
+
+    }
+
+    // Après 1 minute (60000 ms), on ferme automatiquement les alertes
+    setTimeout(function() {
+        // Bootstrap 5 dispose d'une méthode JS pour fermer les alertes (alert.dispose())
+        var alertSuccess = document.getElementById('alert-success');
+        if(alertSuccess) {
+            var alert = bootstrap.Alert.getOrCreateInstance(alertSuccess);
+            alert.close();
+        }
+
+        var alertError = document.getElementById('alert-error');
+        if(alertError) {
+            var alert = bootstrap.Alert.getOrCreateInstance(alertError);
+            alert.close();
+        }
+    }, 5000);
+
+
+    function toggleAccordion(element) {
+      element.classList.toggle('active');
+    }
+
+    //<!-- afficher sidebar -->
+    function showSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.style.right = '0';
+    }
+
+    function hideSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.style.right = '-250px';
+    }
+
+
+    document.getElementById('messageInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        envoyerMessage();
+      }
+    });
+
+    //<!-- ajouter à l'historique -->
+    function envoyerMessage() {
+        const input = document.getElementById('messageInput');
+        const messagesDiv = document.getElementById('messages');
+        const historiqueListe = document.getElementById('historique-liste');
+        const messageTexte = input.value.trim();
+
+        if (messageTexte !== '') {
+            // 💬 Afficher le message utilisateur
+            const nouveauMessage = document.createElement('p');
+            nouveauMessage.className = 'message-user';
+            nouveauMessage.innerHTML = `<strong>Moi :</strong> ${messageTexte}`;
+            messagesDiv.appendChild(nouveauMessage);
+
+            showLoader();
+            // 👉 Envoyer le message au backend
+            fetch('/Home/TraiterMessage', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: messageTexte })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.prof);
+                alert(data.articles)
+
+                // 🧠 Vérifie si un prof a été trouvé
+                if (data.prof && data.prof !== "Inconnu") {
+                    // 💬 Afficher le nom du prof
+                    const profInfo = document.createElement('p');
+                    profInfo.className = 'message-bot';
+                    profInfo.innerHTML = `<strong>SearchProf: :</strong>Voici les articles de Professeur ${data.prof}`;
+                    messagesDiv.appendChild(profInfo);
+
+                    // 📄 Afficher la liste des articles
+                        // 📄 Afficher la liste des articles sous forme de PDF intégrés avec option de téléchargement
+                    if (data.articles && data.articles.length > 0) {
+                        data.articles.forEach(url => {
+                            // 🖼️ Intégrer le PDF dans une iframe
+                            const pdfContainer = document.createElement('div');
+                            pdfContainer.className = 'message-bot';
+                            pdfContainer.style.marginBottom = '20px';
+
+                            const iframe = document.createElement('iframe');
+                            iframe.src = url;
+                            iframe.width = "100%";
+                            iframe.height = "500px";
+                            iframe.style.border = "1px solid #ccc";
+                            pdfContainer.appendChild(iframe);
+
+                            // ⬇️ Ajouter un bouton de téléchargement
+                            const downloadLink = document.createElement('a');
+                            downloadLink.href = url;
+                            downloadLink.download = ''; // Le nom sera pris depuis l'URL
+                            downloadLink.textContent = '📥 Télécharger le PDF';
+                            downloadLink.className = 'btn btn-sm btn-outline-primary';
+                            downloadLink.style.display = 'inline-block';
+                            downloadLink.style.marginTop = '8px';
+                            downloadLink.target = '_blank';
+
+                            pdfContainer.appendChild(downloadLink);
+                            messagesDiv.appendChild(pdfContainer);
+                        });
+
+                        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                    }
+                    else {
+                        const noArticles = document.createElement('p');
+                        noArticles.className = 'message-bot';
+                        noArticles.innerHTML = "Aucun article trouvé pour ce professeur.";
+                        messagesDiv.appendChild(noArticles);
+                    }
+
+
+                } else {
+                    // 🤷‍♂️ Aucun professeur identifié
+                    const notFound = document.createElement('p');
+                    notFound.className = 'message-bot';
+                    notFound.innerHTML = "Aucun professeur correspondant trouvé.";
+                    messagesDiv.appendChild(notFound);
+                }
+
+                
+                // Scroll en bas
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                hideLoader();
+            })
+            .catch(error => {
+                console.error('Erreur lors de l’envoi du message :', error);
+                hideLoader();
+            });
+
+
+            // Réinitialiser le champ
+            input.value = '';
+        }
+    }
+</script>
