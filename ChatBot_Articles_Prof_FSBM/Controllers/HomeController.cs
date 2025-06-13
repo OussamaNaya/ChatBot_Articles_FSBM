@@ -173,7 +173,7 @@ namespace ChatBot_Articles_Prof_FSBM.Controllers
 
 
         [HttpGet]
-        public IActionResult Statistique()
+        public IActionResult tique()
         {
             var stats = _db.Historique
                            .GroupBy(h => h.Prof.Nom)
